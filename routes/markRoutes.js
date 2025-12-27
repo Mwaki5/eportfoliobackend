@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const markController = require("../controllers/markController");
 const verifyRoles = require("../middlewares/verifyRoles");
-import { apiLimiter, authLimiter } from "../middlewares/apiLimiter.js";
+
 // All routes require authentication
 router.post("/", verifyRoles("staff"), markController.createMarks);
 router.get("/", markController.getAllMarks);

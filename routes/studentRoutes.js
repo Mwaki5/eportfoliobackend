@@ -3,7 +3,7 @@ const router = express.Router();
 const studentController = require("../controllers/studentController");
 const verifyRoles = require("../middlewares/verifyRoles");
 const upload = require("../middlewares/multer");
-import { apiLimiter, authLimiter } from "../middlewares/apiLimiter.js";
+
 // All routes require authentication
 router.get("/", studentController.getAllStudents);
 router.get("/filter", studentController.filterStudents);

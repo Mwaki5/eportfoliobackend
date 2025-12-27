@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const enrollmentController = require("../controllers/enrollmentController");
 const verifyRoles = require("../middlewares/verifyRoles");
-import { apiLimiter, authLimiter } from "../middlewares/apiLimiter.js";
-// All routes require authentication
 router.post("/", verifyRoles("staff"), enrollmentController.createEnrollment);
 router.get("/", enrollmentController.getAllEnrollments);
 router.get("/search/:identifier", enrollmentController.searchEnrollments);
