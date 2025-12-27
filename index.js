@@ -8,9 +8,10 @@ const cookieParser = require("cookie-parser");
 const AppError = require("./utils/AppError");
 const path = require("path");
 const { verifyJwt } = require("./middlewares/verifyJwt");
+const { User } = require("./models");
+const bcrypt = require("bcrypt");
 
 const app = express();
-
 // ======== MIDDLEWARES ========
 app.use(credentials);
 app.use(cors(corsOption));
@@ -53,10 +54,29 @@ app.use(errorHandler);
 (async () => {
   try {
     await sequelize.authenticate();
-
+    await sequelize.sync({ alter: true });
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       console.log(`Backend running on port ${PORT}`);
+
+      const defaultStaff = await User.findOne({ where: { username: "staff" } });
+      if (!defaultStaff) {
+        // Hash password before saving
+        const hashedPassword = await bcrypt.hash("staff", 10);
+
+        await User.create({
+          userId: "staff",
+          email: "staff@gmail.com",
+          password: hashedPassword,
+          firstname: "John",
+          lastname: "Doe",
+          gender: "Male",
+          department: "Computer Science",
+          level: level || null,
+          role: "staff",
+          profilePic: "filepath",
+        });
+      }
     });
   } catch (err) {
     // Startup errors go to error log
