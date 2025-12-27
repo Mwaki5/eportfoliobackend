@@ -59,11 +59,10 @@ app.use(errorHandler);
     app.listen(PORT, async () => {
       console.log(`Backend running on port ${PORT}`);
 
-      const defaultStaff = await User.findOne({ where: { username: "staff" } });
+      const defaultStaff = await User.findOne({ where: { userId: "staff" } });
       if (!defaultStaff) {
         // Hash password before saving
         const hashedPassword = await bcrypt.hash("staff", 10);
-
         await User.create({
           userId: "staff",
           email: "staff@gmail.com",
@@ -72,7 +71,7 @@ app.use(errorHandler);
           lastname: "Doe",
           gender: "Male",
           department: "Computer Science",
-          level: level || null,
+          level: null,
           role: "staff",
           profilePic: "filepath",
         });
