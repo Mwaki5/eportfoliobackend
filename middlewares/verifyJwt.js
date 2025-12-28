@@ -10,12 +10,16 @@ const verifyJwt = (req, res, next) => {
 
   const accessToken = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-    // MATCH YOUR TOKEN STRUCTURE
-    req.userId = decoded.userInfor.userId;
-    req.role = decoded.userInfor.role;
+    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        return next(new AppError("Invalid token", 401));
+      }
+      req.userId = user.userInfor.userId;
+      req.role = user.userInfor.role;
 
-    next();
+      next();
+    });
+    // MATCH YOUR TOKEN STRUCTURE
   } catch (err) {
     next(err);
   }
