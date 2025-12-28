@@ -8,7 +8,7 @@ router.get("/search/:identifier", enrollmentController.searchEnrollments);
 router.get("/sessions/:studentId", enrollmentController.getEnrolledSessions);
 router.get("/filter", enrollmentController.filterEnrollments);
 router.get("/student/:studentId", enrollmentController.getEnrollmentsByStudent);
-router.get("/unit/:unitCode", enrollmentController.getEnrollmentsByUnit);
+//router.get("/unit/:unitCode", enrollmentController.getEnrollmentsByUnit);
 router.put("/:id", verifyRoles("staff"), enrollmentController.updateEnrollment);
 router.delete(
   "/:id",

@@ -7,10 +7,7 @@ const verifyRoles = require("../middlewares/verifyRoles");
 router.post("/", verifyRoles("staff"), markController.createMarks);
 router.get("/", markController.getAllMarks);
 router.get("/:userId", markController.getMarksByStudentId);
-router.get(
-  "/student/:userId/session/:session",
-  markController.getMarksBySession
-);
+//router.get( "/student/:userId/session/:session", markController.getMarksBySession);
 router.get("/search/:unitCode", markController.getMarksByUnit);
 router.put("/:id", verifyRoles("staff"), markController.updateMarks);
 router.delete("/:id", verifyRoles("staff"), markController.deleteMarks);

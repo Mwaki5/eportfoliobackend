@@ -11,28 +11,35 @@ const createUnit = async (req, res, next) => {
   try {
     const { unitCode, staffId, unitName } = req.body;
 
-    if (await Unit.findOne({ where: { unitCode } })) {
-      return next(new AppError("Unit code already exists", 409));
+    // Check if unit exists
+    const existingUnit = await Unit.findOne({ where: { unitCode } });
+    if (existingUnit) {
+      return res
+        .status(409)
+        .json({ success: false, message: "Unit code already exists" });
     }
 
+    // Validate staff
     const staff = await User.findOne({
       where: { userId: staffId, role: "staff" },
     });
-    if (!staff) return next(new AppError("Staff member not found", 404));
+    if (!staff) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Staff member not found" });
+    }
 
     const unit = await Unit.create({ unitCode, unitName, staffId });
-
     audit("CREATE_UNIT", req, { unitCode });
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Unit created successfully",
-        data: unit,
-      });
+
+    return res.status(201).json({
+      success: true,
+      message: "Unit created successfully",
+      data: unit,
+    });
   } catch (err) {
     error("CREATE_UNIT_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to create unit", 500));
   }
 };
 
@@ -48,11 +55,13 @@ const getAllUnits = async (req, res, next) => {
       order: [["unitCode", "ASC"]],
     });
 
-    app("FETCH_ALL_UNITS", req, { count: units.length });
-    res.status(200).json({ success: true, data: units });
+    audit("FETCH_ALL_UNITS", req, { count: units.length });
+    return res
+      .status(200)
+      .json({ success: true, count: units.length, data: units });
   } catch (err) {
     error("FETCH_ALL_UNITS_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to fetch units", 500));
   }
 };
 
@@ -83,10 +92,12 @@ const filterUnits = async (req, res, next) => {
     });
 
     audit("FILTER_UNITS", req, { filters: req.query, count: units.length });
-    res.status(200).json({ success: true, count: units.length, data: units });
+    return res
+      .status(200)
+      .json({ success: true, count: units.length, data: units });
   } catch (err) {
     error("FILTER_UNITS_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to filter units", 500));
   }
 };
 
@@ -94,8 +105,11 @@ const filterUnits = async (req, res, next) => {
 const getUnitByCode = async (req, res, next) => {
   try {
     const { identifier } = req.params;
-    if (!isValid(identifier))
-      return next(new AppError("A valid unit code is required", 400));
+    if (!isValid(identifier)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "A valid unit code is required" });
+    }
 
     const unit = await Unit.findOne({
       where: { unitCode: identifier },
@@ -107,14 +121,17 @@ const getUnitByCode = async (req, res, next) => {
       attributes: { exclude: ["createdAt", "updatedAt"] },
     });
 
-    if (!unit)
-      return next(new AppError(`No unit found for: ${identifier}`, 404));
+    if (!unit) {
+      return res
+        .status(404)
+        .json({ success: false, message: `No unit found for: ${identifier}` });
+    }
 
-    app("FETCH_UNIT_BY_CODE", req, { unitCode: identifier });
-    res.status(200).json({ success: true, data: unit });
+    audit("FETCH_UNIT_BY_CODE", req, { unitCode: identifier });
+    return res.status(200).json({ success: true, data: unit });
   } catch (err) {
     error("GET_UNIT_BY_CODE_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to fetch unit", 500));
   }
 };
 
@@ -125,13 +142,19 @@ const updateUnit = async (req, res, next) => {
     const { newStaffId, newUnitCode, newUnitName } = req.body;
 
     const unit = await Unit.findOne({ where: { unitCode } });
-    if (!unit) return next(new AppError("Unit not found", 404));
+    if (!unit)
+      return res
+        .status(404)
+        .json({ success: false, message: "Unit not found" });
 
     if (newStaffId) {
       const staff = await User.findOne({
         where: { userId: newStaffId, role: "staff" },
       });
-      if (!staff) return next(new AppError("Staff member not found", 404));
+      if (!staff)
+        return res
+          .status(404)
+          .json({ success: false, message: "Staff member not found" });
       unit.staffId = newStaffId;
     }
 
@@ -140,7 +163,8 @@ const updateUnit = async (req, res, next) => {
 
     await unit.save();
     audit("UPDATE_UNIT", req, { unitCode });
-    res
+
+    return res
       .status(200)
       .json({
         success: true,
@@ -149,7 +173,7 @@ const updateUnit = async (req, res, next) => {
       });
   } catch (err) {
     error("UPDATE_UNIT_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to update unit", 500));
   }
 };
 
@@ -158,16 +182,20 @@ const deleteUnit = async (req, res, next) => {
   try {
     const { unitCode } = req.params;
     const unit = await Unit.findOne({ where: { unitCode } });
-    if (!unit) return next(new AppError("Unit not found", 404));
+    if (!unit)
+      return res
+        .status(404)
+        .json({ success: false, message: "Unit not found" });
 
     await unit.destroy();
     audit("DELETE_UNIT", req, { unitCode });
-    res
+
+    return res
       .status(200)
       .json({ success: true, message: "Unit deleted successfully" });
   } catch (err) {
     error("DELETE_UNIT_ERROR", req, { error: err });
-    next(err);
+    return next(new AppError("Failed to delete unit", 500));
   }
 };
 

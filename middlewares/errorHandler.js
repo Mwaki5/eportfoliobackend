@@ -1,16 +1,26 @@
-const logger = require("../utils/logger");
+const { error } = require("../utils/logger");
 
-module.exports = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
+// Global Error Handler
+const globalErrorHandler = (err, req, res, next) => {
+  // Log all errors for debugging
+  error("GLOBAL_ERROR", req, err, { error: err });
+  console.log(err);
+  // If error is operational (AppError)
+  if (err.isOperational) {
+    return res.status(err.statusCode).json({
+      success: false,
+      status: err.status,
+      message: err.message,
+    });
+  }
 
-  logger.error(err.code || "UNHANDLED_ERROR", req, err, {
-    status_code: statusCode,
-    service: "backend-api",
-    retryable: false,
-  });
-
-  res.status(statusCode).json({
+  // For non-operational errors (programming, DB, unknown)
+  // Do not send sensitive details to client
+  res.status(500).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    status: "error",
+    message: "Something went wrong on the server",
   });
 };
+
+module.exports = globalErrorHandler;

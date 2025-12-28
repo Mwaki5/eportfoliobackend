@@ -20,7 +20,7 @@ router.get(
   evidenceController.getVideosByStudentUnit
 );
 
-router.get("/unit/:unitCode", evidenceController.getEvidenceByUnit);
+//router.get("/unit/:unitCode", evidenceController.getEvidenceByUnit);
 router.put(
   "/:id",
   verifyRoles("staff"),
