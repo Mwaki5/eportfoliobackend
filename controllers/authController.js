@@ -118,6 +118,7 @@ const loginUser = catchAsync(async (req, res, next) => {
       role: user.role,
       email: user.email,
       firstname: user.firstname,
+      lastname: user.lastname,
       profilePic: user.profilePic,
     },
   });
